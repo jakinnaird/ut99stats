@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+	<div class="row">
+		<div class="col-xs-6 col-md-6">
+			<h4>Recent Games</h4>
+			{% if games %}
+			<div class="scroll-box">
+				<div class="row">
+					{% for game in games %}
+					<div class="span5">
+						<a href="/game/{{game.gameid}}" class="thumbnail">
+							<img src="{{game.thumb}}" style="width:128px;height:128px" />
+							<div class="caption">
+								<h5>{{game.name}}</h5>
+								<p>Winner: {{game.winner}}<br />Time: {{game.time}} seconds<br />Date: {{game.date}}</p>
+							</div>
+						</a>
+					</div>
+					{% endfor %}
+				</div>
+			</div>
+		{% else %}
+			<div class="span5">
+				<h5>No games played recently</h5>
+			</div>
+		{% endif %}
+		</div>
+		<div class="col-xs-6 col-md-6">
+			<h4>Player Rankings</h4>
+			{% if rankings %}
+			<table class="sortable">
+				<tr><th>Player</th><th>Games Played</th><th>Games Won</th><th>Win %</th><th>Kills</th><th>Deaths</th><th>Kill/Death Ratio</th></tr>
+				{% for player in rankings %}
+				<tr>
+					<td><a href="/player/{{player.name}}">{{player.name}}</a></td>
+					<td>{{player.played}}</td>
+					<td><span title="{{player.name}}">{{player.won}}</span></td>
+					<td><span title="{{player.name}}">{{player.winpercent}}</span></td>
+					<td><span title="{{player.name}}">{{player.kills}}</span></td>
+					<td><span title="{{player.name}}">{{player.deaths}}</span></td>
+					<td><span title="{{player.name}}">{{player.killdeath}}</span></td>
+				</tr>
+				{% endfor %}
+			</table>
+			{% else %}
+			<div class="span5">
+				<h5>No player data available</h5>
+			</div>
+			{% endif %}
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-xs-12 col-md-12">
+			<h4>Player Progress</h4>
+			<div id="progress_graph"></div>
+		</div>
+	</div>
+</div>
+{% endblock %}
+
+{% block script %}
+var progress_chart = c3.generate(
+{
+	bindto: '#progress_graph',
+	data: {
+		x: 'x',
+		columns: [
+			[ 'x', {% for day in progress.days %} '{{day}}' {% if loop.last == false %},{% endif %}{% endfor %}],
+			
+			{% for column in progress.columns %}
+			[ {% for point in column %} '{{ point }}' {% if loop.last == false %},{% endif %}{% endfor %} ]{% if loop.last == false %},{% endif %}
+			{% endfor %}
+
+		]
+	},
+	axis: {
+		x: {
+			type: 'timeseries',
+			tick: {
+				rotate: 75,
+				format: '%Y-%m-%d'
+			},
+			label: 'Game Date'
+		},
+		Y: {
+			label: 'Wins'
+		}
+	},
+	zoom: { enabled: true }
+});
+{% endblock %}

@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+
+{% block title %}UTStats - {{player.name}} {% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+	<div class="row">	<!-- Top row -->
+		<div class="col-xs-6 col-md-6"> <!-- Quick stats -->
+			<div class="row">
+				<div class="col-xs-4 col-md-4">
+					<h1>{{player.name}}</h1>
+				</div>
+				<div class="col-xs-8 col-md-8">
+					<table class="table table-condensed">
+					<tr><th>Quick Stats</th></tr>
+					<tr>
+						<td>
+						{% if player.fastwin %}
+						Fastest win: <a href="/game/{{player.fastwingameid}}">{{player.fastwin}}</a> ({{player.fastwintime}} seconds)
+						{% else %}
+						Fastest win: No wins
+						{% endif %}
+						</td>
+					</tr>
+					<tr>
+						<td>
+						{% if player.fastwin %}
+						Average win time: {{player.avgwintime}} seconds
+						{% else %}
+						Average win time: No wins
+						{% endif %}				
+						</td>
+					</tr>
+					<tr>
+						<td>
+						Favorite weapon: <a href="/weapon/{{player.favwepurl}}">{{player.favwep}}</a> ({{player.favwepkills}} kills)
+						</td>
+					</tr>
+					</table>
+				</div>
+			</div>
+		</div>
+		<div class="col-xs-6 col-md-6"> <!-- Win chart? -->
+		</div>
+	</div>
+	
+	<div class="row"> <!-- Second row -->
+		<div class="col-xs-6 col-md-6"> <!-- Weapon stats -->
+			<h4>Weapon Stats</h4>
+			<table class="sortable">
+				<thead>
+					<tr>
+						<th>Weapon</th>
+						{% for hdr in weaponstable.header %}
+						<th><a href="/player/{{ hdr }}">{{ hdr }}</a></th>
+						{% endfor %}
+						<th>Total</th>
+					</tr>
+				</thead>
+				<tfoot>
+					<tr>
+						<td><b>Total:</b></td>
+						{% for tot in weaponstable.footer %}
+						<td>{{ tot }}</td>
+						{% endfor %}
+						<td></td>
+					</tr>
+				</tfoot>
+				<tbody>
+					{% for wep in weaponstable.body %}
+					<tr>
+						{% for elem in wep %}
+							{% if loop.first %}
+							<td><a href='{{elem.url}}'>{{elem.name}}</a></td>
+							{% else %}
+							<td>{{ elem }}</td>
+							{% endif %}
+						{% endfor %}		
+					</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		</div>
+		<div class="col-xs-6 col-md-6"> <!-- Particular stats -->
+			<div class="row">
+				<div class="col-xs-12 col-md-12">
+					<h4>Powerups</h4>
+					{% if powerups %}
+					<table class="table">
+						<thead>
+							<tr>
+								<th>Damage Amplifier</th>
+								<th>Shield Belt</th>
+								<th>Keg O'Health</th>
+								<th>AntiGrav Boots</th>
+								<th>Invisibility</th>
+							</tr>
+						</thead>
+						<tbody>
+							{% for item in powerups %}
+							<tr>
+								<td style="text-align:center">{{item.dmgamp}}</td>
+								<td style="text-align:center">{{item.belt}}</td>
+								<td style="text-align:center">{{item.keg}}</td>
+								<td style="text-align:center">{{item.boots}}</td>
+								<td style="text-align:center">{{item.invis}}</td>
+							</tr>
+							{% endfor %}
+						</tbody>
+					</table>
+					{% else %}
+					<h4>No powerup statistics</h4>
+					{% endif %}
+				</div>
+				<div class="row">
+					<div class="col-xs-6 col-md-6">
+						<h4>Game Results by Day</h4>
+						<div id="weekly_chart"></div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+{% endblock %}
+
+{% block script %}
+
+var weekly_results_chart = c3.generate(
+{
+	bindto: '#weekly_chart',
+	size: { width: 256, height: 256 },
+	data: {
+		x: 'x',
+		type: 'bar',
+		columns: [
+			['x', {% for day in weeklyresults %} '{{ day.name }}' {% if loop.last == false %},{% endif %}{% endfor %}],
+			['played', {% for day in weeklyresults %} {{ day.played }} {% if loop.last == false %},{% endif %}{% endfor %}],
+			['won', {% for day in weeklyresults %} {{ day.won }} {% if loop.last == false %},{% endif %}{% endfor %}]
+			]
+	},
+	axis: {
+		x: {
+			type: 'category',
+			tick: { 
+				rotate: 75, multiline: false 
+			}
+		}
+	}
+});
+
+{% endblock %}

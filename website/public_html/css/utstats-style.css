@@ -1,0 +1,52 @@
+﻿div.scroll-box {
+    overflow-x: auto;
+    white-space: nowrap;
+
+    margin-left: 10px;
+    margin-right: auto;
+    padding-left: 10px;
+}
+
+div.scroll-box [class*="span"] {
+    display: inline-block;
+    float: none; /* Very important */
+}
+
+.scroll-box .span5 { margin-top: 5px; margin-left: 5px; }
+
+table.sortable th {
+    background-color: #eeeeff;
+    color: #666666;
+    font-weight: bold;
+    cursor: default;
+	text-align: center;
+	padding: 3px;
+}
+
+table.sortable tfoot
+{
+	background-color: #eeeeff;
+	color: #666666;
+	font-weight: normal;
+	cursor: default;
+	text-align: center;
+	padding: 3px;
+}
+
+table.sortable tr td:nth-child(odd)
+{
+	text-align: center;
+	padding: 3px;
+	background-color: #efefef;
+}
+
+table.sortable tr td:nth-child(even)
+{
+	text-align: center;
+	padding: 3px;
+	background-color: #ffffff;
+}
+
+table.sortable th:not(.sorttable_sorted):not(.sorttable_sorted_reverse):not(.sorttable_nosort):after { 
+    content: " \25B4\25BE" 
+}

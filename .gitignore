@@ -1,0 +1,11 @@
+*.exe
+*.dll
+*.obj
+*.suo
+*.user
+*.lib
+*.ilk
+*.ncb
+*.pdb
+logwatcher/build/msw/utlogwatcher/Debug/*
+logwatcher/build/msw/utlogwatcher/Release/*

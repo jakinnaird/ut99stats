@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+
+{% block title %}UTStats - Game {{preview.gameid}}{% endblock %}
+
+{% block navcontrols %}
+<li><a href="/game/{{controls.prev}}"><img src="/img/backward-icon.png" /></a></li>
+<li><h2><small>GAME</small></h2></li>
+<li><a href="/game/{{controls.next}}"><img src="/img/forward-icon.png" /></a></li>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+	<div class="row">
+		<div class="col-xs-6 col-md-6"> <!-- map preview -->
+			<div class="row">
+				<div class="col-xs-6 col-md-6">
+					<img src="{{preview.thumb}}" style="width:256px;height:256px;" />
+				</div>
+				<div class="col-xs-6 col-md-6"> <!-- map name and game time -->
+					<h2><a href="/map/{{preview.name}}">{{preview.name}}</a></h2>
+					<h4>Play time: {{preview.time}} seconds</h4>
+					<h4>Game date: {{preview.date}}</h4>
+				</div>
+			</div>
+		</div>
+		<div class="col-xs-6 col-md-6"> <!-- game rankings -->
+			<h4>Game Results</h4>
+			{% if results %}
+			<table class="sortable">
+				<thead>
+					<tr><th>Player</th></th><th>Kills</th><th>Deaths</th><th>Kill/Death</th><th>Kills/Hour</th><th>Play time</th></tr>
+				</thead>
+				<tfoot>
+				</tfoot>
+				<tbody>
+					{% for elem in results %}
+					<tr>
+						<td><a href="/player/{{elem.name}}">{{elem.name}}</a></td>
+						<td>{{elem.kills}}</td>
+						<td>{{elem.deaths}}</td>
+						<td>{{elem.killratio}}</td>
+						<td>{{elem.killrate}}</td>
+						<td>{{elem.time}}</td>
+					</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+			{% else %}
+			<div class="span5">
+				<h5>No result data available</h5>
+			</div>
+			{% endif %}
+		</div>
+	</div>
+	<br />
+	<div class="row">
+		<div class="col-xs-4 col-md-4">
+			{% if powerups %}
+			<h4>Powerups</h4>
+			<table class="sortable">
+				<thead>
+					<tr>
+						<th>Player</th>
+						<th>Damage Amplifier</th>
+						<th>Shield Belt</th>
+						<th>Keg O'Health</th>
+						<th>AntiGrav Boots</th>
+						<th>Invisibility</th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for item in powerups %}
+					<tr>
+						<td>{{item.name}}</td>
+						<td>{{item.dmgamp}}</td>
+						<td>{{item.belt}}</td>
+						<td>{{item.keg}}</td>
+						<td>{{item.boots}}</td>
+						<td>{{item.invis}}</td>
+					</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+			{% else %}
+				<h4>No powerups used!</h4>
+			{% endif %}
+		</div>
+		<div class="col-xs-6 col-md-6 col-xs-offset-1 col-md-offset-1">
+			<h4>Game Timeline</h4>
+			<div class="row">
+				<div id="timeline_graph" class="col-xs-8 col-md-8"></div>
+				<div id="legend_container" class="col-xs-3 col-md-3 col-xs-offset-1 col-md-offset-1">
+					<div id="smoother" title="Smoothing"></div>
+					<div id="timeline_legend"></div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-xs-6 col-md-6">
+			<h4>Player Matchup</h4>
+			<div id="matchup_chart"></div>
+		</div>
+		<div class="col-xs-6 col-md-6">
+			<h4>Example</h4>
+			<div id="example"></div>
+		</div>
+	</div>
+</div>
+{% endblock %}
+
+{% block script %}
+
+var timeline_chart = new Rickshaw.Graph({
+	element: document.getElementById("timeline_graph"),
+	height: 200,
+	renderer: 'line',
+	series: [
+	{% for series in timeline %}
+	{
+		name: '{{ series.name }}',
+		color: '{{ series.color }}',
+		data: [{% for x, y in series.data %} { x: {{ x }}, y: {{ y }} }{% if loop.last == false %},{% endif %}{% endfor %}]
+	}{% if loop.last == false %},{% endif %}
+	{% endfor %}
+	]
+});
+timeline_chart.render();
+
+var tlc_xAxis = new Rickshaw.Graph.Axis.X({
+    graph: timeline_chart
+});
+tlc_xAxis.render();
+
+var tlc_yAxis = new Rickshaw.Graph.Axis.Y({
+    graph: timeline_chart
+});
+tlc_yAxis.render();
+
+var tlc_legend = new Rickshaw.Graph.Legend( {
+	graph: timeline_chart,
+	element: document.getElementById('timeline_legend')
+
+} );
+
+var tlc_hoverDetail = new Rickshaw.Graph.HoverDetail( {
+    graph: timeline_chart,
+    xFormatter: function(x) { return x + " seconds" },
+    yFormatter: function(y) { return y + " frags" }
+} );
+
+c3.generate(
+{
+	bindto: '#matchup_chart',
+	data: {
+		type: 'bar',
+		x: 'names',
+		groups: [
+			[{% for player in matchup.players %}'{{player}}'{% if loop.last == false %},{% endif %}{% endfor%}]
+		],
+		columns: [
+			['names', {% for player in matchup.players %}'{{player}}'{% if loop.last == false %},{% endif %}{% endfor%}],
+			{% for victim, killers in matchup.table %}
+			[ '{{ victim }}', {% for killer, kills in killers %}{{kills}}{% if loop.last == false %},{% endif %}{% endfor %}]{% if loop.last == false %},{% endif %}
+			{% endfor %}
+		]
+	}
+});
+
+c3.generate({
+	bindto: '#example',
+    data: {
+        xs: {
+            'data1': 'x1',
+            'data2': 'x2',
+        },
+        columns: [
+            ['x1', 10, 30, 45, 50, 70, 100],
+            ['x2', 30, 50, 75, 100, 120],
+            ['data1', 30, 200, 100, 400, 150, 250],
+            ['data2', 20, 180, 240, 100, 190]
+        ]
+    }
+});
+
+{% endblock %}

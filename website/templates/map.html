@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}UTStats - {{info.name}}{% endblock %}
+
+{% block navcontrols %}
+<li><a href="/map/{{controls.prev}}"><img src="/img/backward-icon.png" /></a></li>
+<li><h2><small>MAP</small></h2></li>
+<li><a href="/map/{{controls.next}}"><img src="/img/forward-icon.png" /></a></li>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+	<div class="row">
+		<div class="col-xs-3 col-md-3"> <!-- map preview -->
+			<img src="{{info.thumb}}" style="width:256px;height:256px;" />
+		</div>
+		<div class="col-xs-3 col-md-3">
+			<h3>{{info.name}}</h3>
+			<p>Played {{info.playcount}} times ({{info.totalplaytime}} seconds)</p>
+		</div>
+		<div class="col-xs-3 col-md-3">
+			<h4>Statistics</h4>
+			<p>Fastest win: {{info.fasttime}} seconds<br />
+			   Average time: {{info.avgtime}} seconds<br />
+			   Total kills: {{info.totalkills}}
+			</p>
+		</div>
+		<div class="col-xs-3 col-md-3">
+			<h4>Winners</h4>
+			<div id="winner_graph"></div>
+		</div>
+	</div>
+	<div class="row">
+	</div>
+</div>
+{% endblock %}
+
+{% block script %}
+var winner_chart = c3.generate(
+{
+	bindto: "#winner_graph",
+	size: { height: 225, width: 225 },
+	data: {
+		columns: [
+			{% for winner in winners %}
+			[ '{{winner.name}}', {{winner.wins}}]{% if loop.last == false %},{% endif %}
+			{% endfor %}
+		],
+		type: 'donut',
+	},
+});
+
+{% endblock %}

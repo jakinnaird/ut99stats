@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block title %}UTStats - Maps{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+	{% for row in maps|batch(4) %}
+		<div class="row">
+		{% for column in row %}
+			<div class="col-xs-3 col-md-3">
+				<div class="span5">
+					<a href="/map/{{column.name}}" class="thumbnail">
+						<img src="{{column.thumb}}" style="width:256px;height:256px" />
+						<div class="caption">
+							<h5 class="text-center">{{column.name}}</h5>
+							<p class="text-center">Played {{column.playcount}} times</p>
+						</div>
+					</a>
+				</div>
+			</div>
+		{% endfor %}
+		</div>
+	{% endfor %}
+</div>
+{% endblock %}
